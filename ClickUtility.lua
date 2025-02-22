@@ -5,7 +5,7 @@
 --]]
 
 -- Initialize Modules
-local CensuraDev = loadstring(game:HttpGet("https://raw.githubusercontent.com/LxckStxp/Censura/main/Censura.lua"))()
+local CensuraDev = loadstring(game:HttpGet("https://raw.githubusercontent.com/LxckStxp/Censura/main/CensuraDev.lua"))()
 
 -- Initialize Global System
 getgenv().MiddleClickSystem = {
