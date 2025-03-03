@@ -1,98 +1,71 @@
 --[[ 
     Modes Module
-    Mode Definitions and Execution with Dynamic Target Effects
+    Mode Logic for Middle Click Utility
+    Version: 3.3
 --]]
 
 local Modes = {}
 
--- Reference to MiddleClickSystem (should be available in environment)
-local MiddleClickSystem = getfenv(1).MiddleClickSystem or getgenv().MiddleClickSystem
-if not MiddleClickSystem then
-    error("MiddleClickSystem not found in environment. Ensure Main.lua initializes it first.")
-    return
-end
+-- Access MiddleClickSystem
+local MCS = getfenv(1).MiddleClickSystem or getgenv().MiddleClickSystem
+if not MCS then error("MiddleClickSystem not found.") return end
 
--- Safeguard to ensure State exists
-if not MiddleClickSystem.State then
-    MiddleClickSystem.State = MiddleClickSystem.State or {}
-end
+-- Ensure State exists
+MCS.State = MCS.State or {}
 
 Modes.Teleport = {
-    color = MiddleClickSystem.Settings.Effects.TeleportColor, -- Correctly index Settings for colors
-    execute = function(statusLabel)
-        -- Ensure statusLabel exists and is valid
-        if not statusLabel or type(statusLabel.Text) ~= "string" then
-            warn("Invalid statusLabel provided to Teleport mode.")
+    color = MCS.Settings.Effects.TeleportColor,
+    execute = function(status)
+        if not status or type(status.Text) ~= "string" then warn("Invalid status for Teleport.") return end
+
+        local target = MCS.State.Target
+        local char = MCS.Player.Character
+        if not (target and char and char.HumanoidRootPart) then
+            status.Text = "Teleport failed - No target or character!"
             return
         end
 
-        local target = MiddleClickSystem.State.SelectedTarget
-        local character = MiddleClickSystem.LocalPlayer.Character
-        if target and character and character:FindFirstChild("HumanoidRootPart") then
-            local targetPos = target.Position + Vector3.new(0, target.Size.Y/2 + 5, 0)
-            local currentPos = character.HumanoidRootPart.Position
+        local pos = target.Position + Vector3.new(0, target.Size.Y/2 + 5)
+        local startPos = char.HumanoidRootPart.Position
 
-            -- Effect at starting position using Effects module
-            MiddleClickSystem.Effects.createEffect(currentPos, MiddleClickSystem.Settings.Effects.TeleportColor, "teleport", character:FindFirstChild("HumanoidRootPart"))
-            task.wait(0.15) -- Sync with effect timing
-            character:PivotTo(CFrame.new(targetPos))
-            -- Effect at destination using Effects module
-            MiddleClickSystem.Effects.createEffect(targetPos, MiddleClickSystem.Settings.Effects.TeleportColor, "teleport", target)
+        MCS.Effects.createEffect(startPos, MCS.Settings.Effects.TeleportColor, "teleport", char.HumanoidRootPart)
+        task.wait(0.15)
+        char:PivotTo(CFrame.new(pos))
+        MCS.Effects.createEffect(pos, MCS.Settings.Effects.TeleportColor, "teleport", target)
 
-            statusLabel.Text = "Teleported to target!"
-            task.delay(1.5, function()
-                if MiddleClickSystem.State.CurrentMode == "Teleport" then
-                    statusLabel.Text = "Mode: Teleport - Ready"
-                end
-            end)
-        else
-            statusLabel.Text = "Teleport failed - No valid target or character!"
-        end
+        status.Text = "Teleported to target!"
+        task.delay(1.5, function()
+            if MCS.State.Mode == "Teleport" then status.Text = "Mode: Teleport - Ready" end
+        end)
     end
 }
 
--- Ensure proper spacing and syntax for the Temporary Remove mode
 Modes["Temporary Remove"] = {
-    color = MiddleClickSystem.Settings.Effects.RemoveColor, -- Correctly index Settings for colors
-    execute = function(statusLabel)
-        -- Ensure statusLabel exists and is valid
-        if not statusLabel or type(statusLabel.Text) ~= "string" then
-            warn("Invalid statusLabel provided to Temporary Remove mode.")
+    color = MCS.Settings.Effects.RemoveColor,
+    execute = function(status)
+        if not status or type(status.Text) ~= "string" then warn("Invalid status for Remove.") return end
+
+        local target = MCS.State.Target
+        if not (target and target:IsA("BasePart") and not MCS.Utils.isHumanoid(target) and not MCS.State.ModifiedParts[target]) then
+            status.Text = "Remove failed - Invalid target or already modified!"
             return
         end
 
-        local target = MiddleClickSystem.State.SelectedTarget
-        if target and target:IsA("BasePart") and not MiddleClickSystem.Utils.isHumanoid(target) and not MiddleClickSystem.State.ModifiedParts[target] then
-            local original = {
-                CFrame = target.CFrame,
-                Anchored = target.Anchored
-            }
-            
-            MiddleClickSystem.State.ModifiedParts[target] = {type = "remove", props = original}
-            
-            -- Remove effect using Effects module
-            MiddleClickSystem.Effects.createEffect(target.Position, MiddleClickSystem.Settings.Effects.RemoveColor, "remove", target)
-            target.Anchored = true
-            target.CFrame = target.CFrame + Vector3.new(0, MiddleClickSystem.Settings.RemoveDepth, 0)
+        local original = {CFrame = target.CFrame, Anchored = target.Anchored}
+        MCS.State.ModifiedParts[target] = {type = "remove", props = original}
 
-            statusLabel.Text = "Wall removed - Restoring in " .. MiddleClickSystem.Settings.RestoreTime .. "s"
+        MCS.Effects.createEffect(target.Position, MCS.Settings.Effects.RemoveColor, "remove", target)
+        target.Anchored, target.CFrame = true, target.CFrame + Vector3.new(0, MCS.Settings.RemoveDepth, 0)
 
-            task.delay(MiddleClickSystem.Settings.RestoreTime, function()
-                if MiddleClickSystem.State.ModifiedParts[target] then
-                    target.CFrame = original.CFrame
-                    target.Anchored = original.Anchored
-                    -- Restore effect using Effects module
-                    MiddleClickSystem.Effects.createEffect(target.Position, MiddleClickSystem.Settings.Effects.RestoreColor, "restore", target)
-                    MiddleClickSystem.State.ModifiedParts[target] = nil
-
-                    if MiddleClickSystem.State.CurrentMode == "Temporary Remove" then
-                        statusLabel.Text = "Mode: Temporary Remove - Ready"
-                    end
-                end
-            end)
-        else
-            statusLabel.Text = "Remove failed - Invalid target or already modified!"
-        end
+        status.Text = "Wall removed - Restoring in " .. MCS.Settings.RestoreTime .. "s"
+        task.delay(MCS.Settings.RestoreTime, function()
+            if MCS.State.ModifiedParts[target] then
+                target.CFrame, target.Anchored = original.CFrame, original.Anchored
+                MCS.Effects.createEffect(target.Position, MCS.Settings.Effects.RestoreColor, "restore", target)
+                MCS.State.ModifiedParts[target] = nil
+                if MCS.State.Mode == "Temporary Remove" then status.Text = "Mode: Temporary Remove - Ready" end
+            end
+        end)
     end
 }
 
