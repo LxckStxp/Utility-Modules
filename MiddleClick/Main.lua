@@ -17,11 +17,18 @@ if not success then
     return
 end
 
+-- Initialize Global System (before loading modules)
+getgenv().MiddleClickSystem = {}
+
 -- Dynamic Module Loader
-local function loadModule(moduleName)
+local function loadModule(moduleName, env)
     local url = BASE_URL .. moduleName .. ".lua"
     local success, module = pcall(function()
-        return loadstring(game:HttpGet(url))()
+        local func = loadstring(game:HttpGet(url))
+        if env then
+            setfenv(func, env)
+        end
+        return func()
     end)
     if not success then
         warn("Failed to load module " .. moduleName .. ": " .. tostring(module))
@@ -30,12 +37,15 @@ local function loadModule(moduleName)
     return module
 end
 
--- Load Modules
-local Config = loadModule("Config")
-local Effects = loadModule("Effects")
-local Modes = loadModule("Modes")
-local UI = loadModule("UI")
-local Utils = loadModule("Utils")
+-- Load Modules with MiddleClickSystem in their environment
+local env = getfenv(1)
+env.MiddleClickSystem = getgenv().MiddleClickSystem -- Ensure MiddleClickSystem is available
+
+local Config = loadModule("Config", env)
+local Effects = loadModule("Effects", env)
+local Modes = loadModule("Modes", env)
+local UI = loadModule("UI", env)
+local Utils = loadModule("Utils", env)
 
 -- Check for module loading failures
 if not (Config and Effects and Modes and UI and Utils) then
@@ -43,7 +53,7 @@ if not (Config and Effects and Modes and UI and Utils) then
     return
 end
 
--- Initialize Global System
+-- Update MiddleClickSystem with Config data
 getgenv().MiddleClickSystem = Config.MiddleClickSystem
 
 -- Services
