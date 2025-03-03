@@ -1,155 +1,244 @@
 --[[ 
     Effects Module
-    Enhanced Particle and Visual Effects
+    Sophisticated Particle and Visual Effects
 --]]
 
 local Effects = {}
 
--- Utility function for particle emitter creation with modern flair
-function Effects.createParticleEffect(part, color, intensity)
+-- Advanced particle emitter with gradient and motion complexity
+function Effects.createParticleEffect(part, color, intensity, style)
     local emitter = Instance.new("ParticleEmitter")
     emitter.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, color),
-        ColorSequenceKeypoint.new(0.5, color:Lerp(Color3.new(1, 1, 1), 0.3)), -- Subtle fade
-        ColorSequenceKeypoint.new(1, Color3.new(1, 1, 1)) -- Bright white finish
+        ColorSequenceKeypoint.new(0, color), -- Start with base color
+        ColorSequenceKeypoint.new(0.4, color:Lerp(Color3.new(1, 1, 1), 0.6)), -- Brighten midway
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)) -- Fade to white
     })
     emitter.Size = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 1 * intensity), -- Larger initial size
-        NumberSequenceKeypoint.new(0.3, 0.6 * intensity),
+        NumberSequenceKeypoint.new(0, 1.2 * intensity), -- Dynamic initial size
+        NumberSequenceKeypoint.new(0.5, 0.8 * intensity),
         NumberSequenceKeypoint.new(1, 0)
     })
-    emitter.Lifetime = NumberRange.new(0.8, 2) -- Longer lifetime for smoother fade
-    emitter.Rate = 100 -- Increased rate for density
-    emitter.Speed = NumberRange.new(10, 20)
-    emitter.SpreadAngle = Vector2.new(-45, 45) -- Controlled spread for directionality
-    emitter.Rotation = NumberRange.new(0, 360) -- Random rotation for variety
-    emitter.RotSpeed = NumberRange.new(-100, 100) -- Spin particles
+    emitter.Lifetime = NumberRange.new(0.6, 1.8) -- Varied lifetime for depth
+    emitter.Rate = 120 -- Dense particle flow
+    emitter.Speed = NumberRange.new(12, 25) -- Faster, more energetic
+    emitter.SpreadAngle = style == "burst" and Vector2.new(-60, 60) or Vector2.new(-30, 30) -- Style-specific spread
+    emitter.Rotation = NumberRange.new(0, 360)
+    emitter.RotSpeed = NumberRange.new(-150, 150) -- Faster spin for sophistication
+    emitter.Acceleration = Vector3.new(0, -5, 0) -- Subtle gravity for realism
+    emitter.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0),
+        NumberSequenceKeypoint.new(0.9, 0.2),
+        NumberSequenceKeypoint.new(1, 1)
+    }) -- Smooth fade-out
     emitter.Parent = part
     return emitter
 end
 
--- Main effect creation function with enhanced animations
+-- Main effect function with layered, modern animations
 function Effects.createEffect(position, color, effectType)
     local TweenService = MiddleClickSystem.Services.TweenService
     local Debris = MiddleClickSystem.Services.Debris
 
-    -- Core effect part (central burst)
-    local effect = Instance.new("Part")
-    effect.Shape = Enum.PartType.Ball -- Spherical for modern look
-    effect.Size = Vector3.new(2, 2, 2)
-    effect.Position = position
-    effect.Anchored = true
-    effect.CanCollide = false
-    effect.Transparency = 0.2
-    effect.Material = Enum.Material.ForceField -- Sleek, glowing look
-    effect.Color = color
-    effect.Parent = workspace
+    -- Core effect: Pulsing orb with glow
+    local core = Instance.new("Part")
+    core.Shape = Enum.PartType.Ball
+    core.Size = Vector3.new(2.5, 2.5, 2.5)
+    core.Position = position
+    core.Anchored = true
+    core.CanCollide = false
+    core.Transparency = 0.1
+    core.Material = Enum.Material.ForceField -- Glowing, futuristic vibe
+    core.Color = color
+    core.Parent = workspace
 
-    -- Particle emitter for extra flair
-    local emitter = Effects.createParticleEffect(effect, color, 1.5)
-
-    -- Core animation (expand and fade with easing)
-    local coreTween = TweenService:Create(effect, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Size = Vector3.new(8, 8, 8),
+    local coreEmitter = Effects.createParticleEffect(core, color, 1.8, "burst")
+    local coreTween = TweenService:Create(core, TweenInfo.new(0.9, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
+        Size = Vector3.new(10, 10, 10),
         Transparency = 1
     })
     coreTween:Play()
-    Debris:AddItem(effect, 0.8)
+    Debris:AddItem(core, 0.9)
 
-    -- Effect-specific enhancements
+    -- Shared glow aura (for all effects)
+    local aura = Instance.new("Part")
+    aura.Shape = Enum.PartType.Ball
+    aura.Size = Vector3.new(5, 5, 5)
+    aura.Position = position
+    aura.Anchored = true
+    aura.CanCollide = false
+    aura.Transparency = 0.6
+    aura.Material = Enum.Material.Neon
+    aura.Color = color:Lerp(Color3.new(1, 1, 1), 0.3) -- Slightly lighter
+    aura.Parent = workspace
+
+    TweenService:Create(aura, TweenInfo.new(0.7, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+        Size = Vector3.new(15, 15, 15),
+        Transparency = 1
+    }):Play()
+    Debris:AddItem(aura, 0.7)
+
+    -- Effect-specific animations
     if effectType == "teleport" then
-        -- Teleport: Add a vertical beam and swirling ring
-        local beam = Instance.new("Part")
-        beam.Size = Vector3.new(0.5, 10, 0.5)
-        beam.CFrame = CFrame.new(position) * CFrame.Angles(math.rad(90), 0, 0)
-        beam.Anchored = true
-        beam.CanCollide = false
-        beam.Material = Enum.Material.Neon
-        beam.Color = color
-        beam.Transparency = 0.4
-        beam.Parent = workspace
+        -- Teleport: Dual beams, orbiting rings, and a pulse
+        local beamUp = Instance.new("Part")
+        beamUp.Size = Vector3.new(0.8, 12, 0.8)
+        beamUp.CFrame = CFrame.new(position) * CFrame.Angles(math.rad(90), 0, 0)
+        beamUp.Anchored = true
+        beamUp.CanCollide = false
+        beamUp.Material = Enum.Material.Neon
+        beamUp.Color = color
+        beamUp.Transparency = 0.3
+        beamUp.Parent = workspace
 
-        TweenService:Create(beam, TweenInfo.new(0.6, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out), {
-            Size = Vector3.new(0.2, 15, 0.2),
+        TweenService:Create(beamUp, TweenInfo.new(0.5, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out), {
+            Size = Vector3.new(0.3, 20, 0.3),
+            Position = position + Vector3.new(0, 10, 0),
             Transparency = 1
         }):Play()
-        Debris:AddItem(beam, 0.6)
+        Debris:AddItem(beamUp, 0.5)
 
-        local swirl = Instance.new("Part")
-        swirl.Size = Vector3.new(4, 0.2, 4)
-        swirl.CFrame = CFrame.new(position)
-        swirl.Anchored = true
-        swirl.CanCollide = false
-        swirl.Material = Enum.Material.Neon
-        swirl.Color = color
-        swirl.Parent = workspace
-
-        local swirlTween = TweenService:Create(swirl, TweenInfo.new(0.7, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
-            Size = Vector3.new(12, 0.1, 12),
-            CFrame = swirl.CFrame * CFrame.Angles(0, math.rad(180), 0), -- Rotate 180 degrees
+        local beamDown = beamUp:Clone()
+        beamDown.CFrame = CFrame.new(position) * CFrame.Angles(math.rad(-90), 0, 0)
+        beamDown.Parent = workspace
+        TweenService:Create(beamDown, TweenInfo.new(0.5, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out), {
+            Size = Vector3.new(0.3, 20, 0.3),
+            Position = position - Vector3.new(0, 10, 0),
             Transparency = 1
-        })
-        swirlTween:Play()
-        Debris:AddItem(swirl, 0.7)
+        }):Play()
+        Debris:AddItem(beamDown, 0.5)
+
+        -- Orbiting rings
+        for i = 1, 2 do
+            local orbit = Instance.new("Part")
+            orbit.Size = Vector3.new(5, 0.2, 5)
+            orbit.CFrame = CFrame.new(position) * CFrame.Angles(0, math.rad(90 * i), 0)
+            orbit.Anchored = true
+            orbit.CanCollide = false
+            orbit.Material = Enum.Material.Neon
+            orbit.Color = color
+            orbit.Parent = workspace
+
+            TweenService:Create(orbit, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+                Size = Vector3.new(14, 0.1, 14),
+                CFrame = orbit.CFrame * CFrame.Angles(0, math.rad(360 * i), 0), -- Full rotation
+                Transparency = 1
+            }):Play()
+            Debris:AddItem(orbit, 0.8)
+        end
 
     elseif effectType == "remove" then
-        -- Remove: Add a collapsing ring and burst effect
-        local collapseRing = Instance.new("Part")
-        collapseRing.Size = Vector3.new(10, 0.3, 10)
-        collapseRing.CFrame = CFrame.new(position)
-        collapseRing.Anchored = true
-        collapseRing.CanCollide = false
-        collapseRing.Material = Enum.Material.Neon
-        collapseRing.Color = color
-        collapseRing.Transparency = 0.5
-        collapseRing.Parent = workspace
+        -- Remove: Implosion vortex, collapsing shards, and burst
+        local vortex = Instance.new("Part")
+        vortex.Size = Vector3.new(8, 0.4, 8)
+        vortex.CFrame = CFrame.new(position)
+        vortex.Anchored = true
+        vortex.CanCollide = false
+        vortex.Material = Enum.Material.Neon
+        vortex.Color = color
+        vortex.Transparency = 0.4
+        vortex.Parent = workspace
 
-        TweenService:Create(collapseRing, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+        TweenService:Create(vortex, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
             Size = Vector3.new(1, 0.1, 1),
+            CFrame = vortex.CFrame * CFrame.Angles(0, math.rad(270), 0), -- Spin inward
             Transparency = 1
         }):Play()
-        Debris:AddItem(collapseRing, 0.5)
+        Debris:AddItem(vortex, 0.6)
 
-        -- Add a secondary burst of smaller particles
+        -- Shards collapsing inward
+        for i = 1, 4 do
+            local shard = Instance.new("Part")
+            shard.Size = Vector3.new(1, 1, 1)
+            shard.CFrame = CFrame.new(position + Vector3.new(math.cos(i * math.pi/2) * 5, 0, math.sin(i * math.pi/2) * 5))
+            shard.Anchored = true
+            shard.CanCollide = false
+            shard.Material = Enum.Material.Neon
+            shard.Color = color
+            shard.Parent = workspace
+
+            TweenService:Create(shard, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+                Position = position,
+                Size = Vector3.new(0.5, 0.5, 0.5),
+                Transparency = 1
+            }):Play()
+            Debris:AddItem(shard, 0.5)
+        end
+
+        -- Secondary burst
         local burst = Instance.new("Part")
-        burst.Size = Vector3.new(1, 1, 1)
+        burst.Size = Vector3.new(1.5, 1.5, 1.5)
         burst.Position = position
         burst.Anchored = true
         burst.CanCollide = false
-        burst.Transparency = 0.3
-        burst.Material = Enum.Material.Neon
+        burst.Transparency = 0.2
+        burst.Material = Enum.Material.ForceField
         burst.Color = color
         burst.Parent = workspace
 
-        Effects.createParticleEffect(burst, color, 0.8) -- Smaller, faster particles
-        TweenService:Create(burst, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = Vector3.new(5, 5, 5),
-            Transparency = 1
-        }):Play()
-        Debris:AddItem(burst, 0.4)
-    end
-
-    -- Restore effect (triggered elsewhere but defined here for consistency)
-    if effectType == "restore" then
-        local rise = Instance.new("Part")
-        rise.Size = Vector3.new(3, 3, 3)
-        rise.Position = position - Vector3.new(0, 5, 0) -- Start below
-        rise.Anchored = true
-        rise.CanCollide = false
-        rise.Material = Enum.Material.ForceField
-        rise.Color = color
-        rise.Transparency = 0.6
-        rise.Parent = workspace
-
-        TweenService:Create(rise, TweenInfo.new(0.9, Enum.EasingStyle.Bounce, Enum.EasingDirection.Out), {
-            Position = position + Vector3.new(0, 2, 0), -- Rise and overshoot
+        Effects.createParticleEffect(burst, color, 1, "burst")
+        TweenService:Create(burst, TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
             Size = Vector3.new(6, 6, 6),
             Transparency = 1
         }):Play()
-        Debris:AddItem(rise, 0.9)
+        Debris:AddItem(burst, 0.4)
+
+    elseif effectType == "restore" then
+        -- Restore: Rising spiral, glowing pulse, and particle flourish
+        local spiral = Instance.new("Part")
+        spiral.Size = Vector3.new(4, 0.3, 4)
+        spiral.Position = position - Vector3.new(0, 6, 0) -- Start below
+        spiral.Anchored = true
+        spiral.CanCollide = false
+        spiral.Material = Enum.Material.Neon
+        spiral.Color = color
+        spiral.Transparency = 0.5
+        spiral.Parent = workspace
+
+        TweenService:Create(spiral, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+            Position = position + Vector3.new(0, 3, 0),
+            Size = Vector3.new(8, 0.1, 8),
+            CFrame = spiral.CFrame * CFrame.Angles(0, math.rad(540), 0), -- Spiral upward
+            Transparency = 1
+        }):Play()
+        Debris:AddItem(spiral, 1)
+
+        -- Glowing pulse
+        local pulse = Instance.new("Part")
+        pulse.Shape = Enum.PartType.Ball
+        pulse.Size = Vector3.new(3, 3, 3)
+        pulse.Position = position
+        pulse.Anchored = true
+        pulse.CanCollide = false
+        pulse.Material = Enum.Material.ForceField
+        pulse.Color = color
+        pulse.Transparency = 0.4
+        pulse.Parent = workspace
+
+        TweenService:Create(pulse, TweenInfo.new(0.8, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), {
+            Size = Vector3.new(7, 7, 7),
+            Transparency = 1
+        }):Play()
+        Debris:AddItem(pulse, 0.8)
+
+        -- Particle flourish
+        local flourish = Instance.new("Part")
+        flourish.Size = Vector3.new(1, 1, 1)
+        flourish.Position = position + Vector3.new(0, 2, 0)
+        flourish.Anchored = true
+        flourish.CanCollide = false
+        flourish.Material = Enum.Material.Neon
+        flourish.Color = color
+        flourish.Parent = workspace
+
+        Effects.createParticleEffect(flourish, color, 1.2, "burst")
+        TweenService:Create(flourish, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = Vector3.new(4, 4, 4),
+            Transparency = 1
+        }):Play()
+        Debris:AddItem(flourish, 0.6)
     end
 
-    return emitter
+    return coreEmitter
 end
 
 return Effects
