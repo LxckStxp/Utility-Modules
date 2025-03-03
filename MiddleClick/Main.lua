@@ -1,8 +1,12 @@
 --[[ 
     Enhanced Middle Click Utility - Main
     Version 3.3
-    Modular Entry Point for Cheat Utility System
+    Executor-Injected Entry Point for Cheat Utility System
+    Hosted on GitHub: LxckStxp/Utility-Modules/MiddleClick/
 --]]
+
+-- Base GitHub URL for module loading
+local BASE_URL = "https://raw.githubusercontent.com/LxckStxp/Utility-Modules/main/MiddleClick/"
 
 -- Load UI Library
 local success, CensuraDev = pcall(function()
@@ -13,12 +17,31 @@ if not success then
     return
 end
 
--- Initialize Modules
-local Config = require(script.Parent.Config)
-local Effects = require(script.Parent.Effects)
-local Modes = require(script.Parent.Modes)
-local UI = require(script.Parent.UI)
-local Utils = require(script.Parent.Utils)
+-- Dynamic Module Loader
+local function loadModule(moduleName)
+    local url = BASE_URL .. moduleName .. ".lua"
+    local success, module = pcall(function()
+        return loadstring(game:HttpGet(url))()
+    end)
+    if not success then
+        warn("Failed to load module " .. moduleName .. ": " .. tostring(module))
+        return nil
+    end
+    return module
+end
+
+-- Load Modules
+local Config = loadModule("Config")
+local Effects = loadModule("Effects")
+local Modes = loadModule("Modes")
+local UI = loadModule("UI")
+local Utils = loadModule("Utils")
+
+-- Check for module loading failures
+if not (Config and Effects and Modes and UI and Utils) then
+    warn("One or more modules failed to load. Aborting initialization.")
+    return
+end
 
 -- Initialize Global System
 getgenv().MiddleClickSystem = Config.MiddleClickSystem
@@ -61,8 +84,12 @@ end
 
 -- Initialize the Utility
 local UIInstance = initializeUtility()
+if not UIInstance then
+    warn("Utility initialization failed. Check logs for details.")
+    return
+end
 
--- Safety Cleanup on Teleport or Script Termination
+-- Safety Cleanup on Teleport or Character Removal
 local function cleanup()
     MiddleClickSystem.State.ModifiedParts = {}
     if MiddleClickSystem.State.CurrentHighlight then
@@ -77,13 +104,8 @@ local function cleanup()
 end
 
 Services.Players.LocalPlayer.OnTeleport:Connect(cleanup)
+Services.Players.LocalPlayer.CharacterRemoving:Connect(cleanup)
 
--- Ensure cleanup on script end (if applicable)
-game:GetService("Players").LocalPlayer.CharacterRemoving:Connect(function()
-    cleanup()
-end)
-
--- Version Check (Optional Debugging)
-if MiddleClickSystem then
-    MiddleClickSystem.Version = "3.3"
-end
+-- Version and Debug Info
+MiddleClickSystem.Version = "3.3"
+print("Running Middle Click Utility v" .. MiddleClickSystem.Version .. " via executor.")
