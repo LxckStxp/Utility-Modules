@@ -13,10 +13,10 @@ local Modes = {
                 local targetPos = target.Position + Vector3.new(0, target.Size.Y/2 + 5, 0)
                 local currentPos = character.HumanoidRootPart.Position
 
-                MiddleClickSystem.Effects.createEffect(currentPos, MiddleClickSystem.Settings.Effects.TeleportColor, "teleport")
-                task.wait(0.15) -- Brief delay for effect sync
+                MiddleClickSystem.Effects.createEffect(currentPos, MiddleClickSystem.Settings.Effects.TeleportColor, "teleport", target)
+                task.wait(0.15)
                 character:PivotTo(CFrame.new(targetPos))
-                MiddleClickSystem.Effects.createEffect(targetPos, MiddleClickSystem.Settings.Effects.TeleportColor, "teleport")
+                MiddleClickSystem.Effects.createEffect(targetPos, MiddleClickSystem.Settings.Effects.TeleportColor, "teleport", target)
 
                 statusLabel.Text = "Teleported to target!"
                 task.delay(1.5, function()
@@ -42,7 +42,7 @@ local Modes = {
                 
                 MiddleClickSystem.State.ModifiedParts[target] = {type = "remove", props = original}
                 
-                MiddleClickSystem.Effects.createEffect(target.Position, MiddleClickSystem.Settings.Effects.RemoveColor, "remove")
+                MiddleClickSystem.Effects.createEffect(target.Position, MiddleClickSystem.Settings.Effects.RemoveColor, "remove", target)
                 target.Anchored = true
                 target.CFrame = target.CFrame + Vector3.new(0, MiddleClickSystem.Settings.RemoveDepth, 0)
 
@@ -52,7 +52,7 @@ local Modes = {
                     if MiddleClickSystem.State.ModifiedParts[target] then
                         target.CFrame = original.CFrame
                         target.Anchored = original.Anchored
-                        MiddleClickSystem.Effects.createEffect(target.Position, MiddleClickSystem.Settings.Effects.RestoreColor, "restore") -- Updated to "restore"
+                        MiddleClickSystem.Effects.createEffect(target.Position, MiddleClickSystem.Settings.Effects.RestoreColor, "restore", target)
                         MiddleClickSystem.State.ModifiedParts[target] = nil
 
                         if MiddleClickSystem.State.CurrentMode == "Temporary Remove" then
