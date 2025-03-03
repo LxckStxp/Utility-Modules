@@ -23,15 +23,30 @@ getgenv().MiddleClickSystem = {}
 -- Dynamic Module Loader
 local function loadModule(moduleName, env)
     local url = BASE_URL .. moduleName .. ".lua"
-    local success, module = pcall(function()
-        local func = loadstring(game:HttpGet(url))
-        if env then
-            setfenv(func, env)
-        end
-        return func()
+    local success, funcOrError = pcall(function()
+        return loadstring(game:HttpGet(url))
     end)
+    
     if not success then
-        warn("Failed to load module " .. moduleName .. ": " .. tostring(module))
+        warn("Failed to load module " .. moduleName .. ": " .. tostring(funcOrError))
+        return nil
+    end
+    
+    -- Ensure funcOrError is a function before calling setfenv
+    if type(funcOrError) ~= "function" then
+        warn("Module " .. moduleName .. " did not return a function: " .. tostring(funcOrError))
+        return nil
+    end
+    
+    -- Set environment if provided
+    if env then
+        setfenv(funcOrError, env)
+    end
+    
+    -- Execute the loaded function and return its result
+    local success, module = pcall(funcOrError)
+    if not success then
+        warn("Failed to execute module " .. moduleName .. ": " .. tostring(module))
         return nil
     end
     return module
