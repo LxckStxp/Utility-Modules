@@ -1,6 +1,7 @@
 --[[ 
     Utility Module
-    Helper Functions
+    Helper Functions for Middle Click Utility
+    Version: 3.3
 --]]
 
 local Utils = {}
@@ -11,16 +12,15 @@ function Utils.isHumanoid(target)
 end
 
 function Utils.createHighlight(target, color)
-    if MiddleClickSystem.State.CurrentHighlight then
-        MiddleClickSystem.State.CurrentHighlight:Destroy()
+    if MiddleClickSystem.State.Highlight then
+        MiddleClickSystem.State.Highlight:Destroy()
     end
     local highlight = Instance.new("Highlight")
-    highlight.FillColor = color
-    highlight.OutlineColor = color
-    highlight.FillTransparency = 0.5
-    highlight.OutlineTransparency = 0
+    highlight.FillColor = color or MiddleClickSystem.Settings.Effects.HighlightColor
+    highlight.OutlineColor = color or MiddleClickSystem.Settings.Effects.HighlightColor
+    highlight.FillTransparency, highlight.OutlineTransparency = 0.5, 0
     highlight.Parent = target
-    MiddleClickSystem.State.CurrentHighlight = highlight
+    MiddleClickSystem.State.Highlight = highlight
     return highlight
 end
 
