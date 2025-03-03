@@ -18,7 +18,7 @@ if not MiddleClickSystem.State then
 end
 
 Modes.Teleport = {
-    color = MiddleClickSystem.Settings.Effects.TeleportColor,
+    color = MiddleClickSystem.Settings.Effects.TeleportColor, -- Correctly index Settings for colors
     execute = function(statusLabel)
         -- Ensure statusLabel exists and is valid
         if not statusLabel or type(statusLabel.Text) ~= "string" then
@@ -32,11 +32,11 @@ Modes.Teleport = {
             local targetPos = target.Position + Vector3.new(0, target.Size.Y/2 + 5, 0)
             local currentPos = character.HumanoidRootPart.Position
 
-            -- Effect at starting position
+            -- Effect at starting position using Effects module
             MiddleClickSystem.Effects.createEffect(currentPos, MiddleClickSystem.Settings.Effects.TeleportColor, "teleport", character:FindFirstChild("HumanoidRootPart"))
             task.wait(0.15) -- Sync with effect timing
             character:PivotTo(CFrame.new(targetPos))
-            -- Effect at destination
+            -- Effect at destination using Effects module
             MiddleClickSystem.Effects.createEffect(targetPos, MiddleClickSystem.Settings.Effects.TeleportColor, "teleport", target)
 
             statusLabel.Text = "Teleported to target!"
@@ -53,7 +53,7 @@ Modes.Teleport = {
 
 -- Ensure proper spacing and syntax for the Temporary Remove mode
 Modes["Temporary Remove"] = {
-    color = MiddleClickSystem.Settings.Effects.RemoveColor,
+    color = MiddleClickSystem.Settings.Effects.RemoveColor, -- Correctly index Settings for colors
     execute = function(statusLabel)
         -- Ensure statusLabel exists and is valid
         if not statusLabel or type(statusLabel.Text) ~= "string" then
@@ -70,7 +70,7 @@ Modes["Temporary Remove"] = {
             
             MiddleClickSystem.State.ModifiedParts[target] = {type = "remove", props = original}
             
-            -- Remove effect
+            -- Remove effect using Effects module
             MiddleClickSystem.Effects.createEffect(target.Position, MiddleClickSystem.Settings.Effects.RemoveColor, "remove", target)
             target.Anchored = true
             target.CFrame = target.CFrame + Vector3.new(0, MiddleClickSystem.Settings.RemoveDepth, 0)
@@ -81,7 +81,7 @@ Modes["Temporary Remove"] = {
                 if MiddleClickSystem.State.ModifiedParts[target] then
                     target.CFrame = original.CFrame
                     target.Anchored = original.Anchored
-                    -- Restore effect
+                    -- Restore effect using Effects module
                     MiddleClickSystem.Effects.createEffect(target.Position, MiddleClickSystem.Settings.Effects.RestoreColor, "restore", target)
                     MiddleClickSystem.State.ModifiedParts[target] = nil
 
