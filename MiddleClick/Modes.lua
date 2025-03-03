@@ -1,6 +1,6 @@
 --[[ 
     Modes Module
-    Mode Definitions and Execution
+    Mode Definitions and Execution with Dynamic Target Effects
 --]]
 
 local Modes = {
@@ -13,9 +13,11 @@ local Modes = {
                 local targetPos = target.Position + Vector3.new(0, target.Size.Y/2 + 5, 0)
                 local currentPos = character.HumanoidRootPart.Position
 
-                MiddleClickSystem.Effects.createEffect(currentPos, MiddleClickSystem.Settings.Effects.TeleportColor, "teleport", target)
-                task.wait(0.15)
+                -- Effect at starting position
+                MiddleClickSystem.Effects.createEffect(currentPos, MiddleClickSystem.Settings.Effects.TeleportColor, "teleport", character:FindFirstChild("HumanoidRootPart")) -- Use character part as target for start
+                task.wait(0.15) -- Sync with effect timing
                 character:PivotTo(CFrame.new(targetPos))
+                -- Effect at destination
                 MiddleClickSystem.Effects.createEffect(targetPos, MiddleClickSystem.Settings.Effects.TeleportColor, "teleport", target)
 
                 statusLabel.Text = "Teleported to target!"
@@ -42,6 +44,7 @@ local Modes = {
                 
                 MiddleClickSystem.State.ModifiedParts[target] = {type = "remove", props = original}
                 
+                -- Remove effect
                 MiddleClickSystem.Effects.createEffect(target.Position, MiddleClickSystem.Settings.Effects.RemoveColor, "remove", target)
                 target.Anchored = true
                 target.CFrame = target.CFrame + Vector3.new(0, MiddleClickSystem.Settings.RemoveDepth, 0)
@@ -52,6 +55,7 @@ local Modes = {
                     if MiddleClickSystem.State.ModifiedParts[target] then
                         target.CFrame = original.CFrame
                         target.Anchored = original.Anchored
+                        -- Restore effect
                         MiddleClickSystem.Effects.createEffect(target.Position, MiddleClickSystem.Settings.Effects.RestoreColor, "restore", target)
                         MiddleClickSystem.State.ModifiedParts[target] = nil
 
