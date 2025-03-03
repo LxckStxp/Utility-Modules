@@ -1,6 +1,7 @@
 --[[ 
     Configuration Module
-    Settings and Initial State
+    Settings and State for Middle Click Utility
+    Version: 3.3
 --]]
 
 local Config = {}
@@ -18,13 +19,13 @@ Config.MiddleClickSystem = {
         }
     },
     State = {
-        CurrentMode = nil,
+        Mode = nil, -- Renamed CurrentMode to Mode for brevity
         Cooldown = false,
         ModifiedParts = {},
-        IsEnabled = false,
-        CurrentHighlight = nil,
-        IsSelecting = false,
-        SelectedTarget = nil
+        Enabled = false, -- Renamed IsEnabled to Enabled for brevity
+        Highlight = nil, -- Renamed CurrentHighlight for brevity
+        Selecting = false, -- Renamed IsSelecting for brevity
+        Target = nil -- Renamed SelectedTarget for brevity
     }
 }
 
