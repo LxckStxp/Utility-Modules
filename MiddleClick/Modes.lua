@@ -12,9 +12,20 @@ if not MiddleClickSystem then
     return
 end
 
+-- Safeguard to ensure State exists
+if not MiddleClickSystem.State then
+    MiddleClickSystem.State = MiddleClickSystem.State or {}
+end
+
 Modes.Teleport = {
     color = MiddleClickSystem.Settings.Effects.TeleportColor,
     execute = function(statusLabel)
+        -- Ensure statusLabel exists and is valid
+        if not statusLabel or type(statusLabel.Text) ~= "string" then
+            warn("Invalid statusLabel provided to Teleport mode.")
+            return
+        end
+
         local target = MiddleClickSystem.State.SelectedTarget
         local character = MiddleClickSystem.LocalPlayer.Character
         if target and character and character:FindFirstChild("HumanoidRootPart") then
@@ -38,11 +49,18 @@ Modes.Teleport = {
             statusLabel.Text = "Teleport failed - No valid target or character!"
         end
     end
-},
-    
-["Temporary Remove"] = {
+}
+
+-- Ensure proper spacing and syntax for the Temporary Remove mode
+Modes["Temporary Remove"] = {
     color = MiddleClickSystem.Settings.Effects.RemoveColor,
     execute = function(statusLabel)
+        -- Ensure statusLabel exists and is valid
+        if not statusLabel or type(statusLabel.Text) ~= "string" then
+            warn("Invalid statusLabel provided to Temporary Remove mode.")
+            return
+        end
+
         local target = MiddleClickSystem.State.SelectedTarget
         if target and target:IsA("BasePart") and not MiddleClickSystem.Utils.isHumanoid(target) and not MiddleClickSystem.State.ModifiedParts[target] then
             local original = {
