@@ -8,7 +8,7 @@ local UI = {}
 local CensuraDev = loadstring(game:HttpGet("https://raw.githubusercontent.com/LxckStxp/Censura/main/CensuraDev.lua"))()
 
 function UI.InitializeUI()
-    local ui = CensuraDev.new("Middle Click Utility v3.2")
+    local ui = CensuraDev.new("Middle Click Utility v3.3")
     
     -- Status display
     local statusLabel = ui:CreateButton("Select a mode to begin", function() end)
